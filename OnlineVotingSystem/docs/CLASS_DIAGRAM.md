@@ -1,0 +1,367 @@
+# Class Diagram - Online Voting System
+
+## Visual Representation
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         MAIN CLASS                              │
+│                         Main.java                               │
+├─────────────────────────────────────────────────────────────────┤
+│ - scanner: Scanner                                              │
+│ - votingService: VotingService                                  │
+│ - admin: Admin                                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ + main(String[] args): void                                     │
+│ - displayMainMenu(): void                                       │
+│ - adminPanel(): void                                            │
+│ - registerCandidate(): void                                     │
+│ - voterRegistration(): void                                     │
+│ - castVote(): void                                              │
+│ - viewCandidates(): void                                        │
+│ - viewResults(): void                                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ uses
+                              ▼
+        ┌─────────────────────────────────────────┐
+        │         ABSTRACT BASE CLASS             │
+        │           Person.java                   │
+        ├─────────────────────────────────────────┤
+        │ - id: String                            │
+        │ - name: String                          │
+        │ - age: int                              │
+        ├─────────────────────────────────────────┤
+        │ + Person(id, name, age)                 │
+        │ + getId(): String                       │
+        │ + getName(): String                     │
+        │ + getAge(): int                         │
+        │ + displayInfo(): void [ABSTRACT]        │
+        └─────────────────────────────────────────┘
+                      ▲           ▲
+                      │           │
+            ┌─────────┘           └─────────┐
+            │                               │
+            │ extends                       │ extends
+            │                               │
+┌───────────────────────────┐   ┌───────────────────────────┐
+│     CANDIDATE CLASS       │   │      VOTER CLASS          │
+│    Candidate.java         │   │      Voter.java           │
+├───────────────────────────┤   ├───────────────────────────┤
+│ - party: String           │   │ - hasVoted: boolean       │
+│ - voteCount: int          │   │                           │
+├───────────────────────────┤   ├───────────────────────────┤
+│ + Candidate(...)          │   │ + Voter(...)              │
+│ + getParty(): String      │   │ + hasVoted(): boolean     │
+│ + getVoteCount(): int     │   │ + markAsVoted(): void     │
+│ + incrementVote(): void   │   │ + displayInfo(): void     │
+│ + displayInfo(): void     │   │   [OVERRIDE]              │
+│   [OVERRIDE]              │   │                           │
+└───────────────────────────┘   └───────────────────────────┘
+            ▲                               ▲
+            │                               │
+            │ manages                       │ manages
+            │                               │
+            └───────────┬───────────────────┘
+                        │
+        ┌───────────────────────────────────────────┐
+        │         SERVICE CLASS                     │
+        │       VotingService.java                  │
+        ├───────────────────────────────────────────┤
+        │ - candidates: ArrayList<Candidate>        │
+        │ - voters: HashMap<String, Voter>          │
+        │ - votingActive: boolean                   │
+        ├───────────────────────────────────────────┤
+        │ + VotingService()                         │
+        │ + addCandidate(Candidate): void           │
+        │ + addVoter(Voter): void                   │
+        │ + castVote(String, String): void          │
+        │ + displayCandidates(): void               │
+        │ + displayVoters(): void                   │
+        │ + displayResults(): void                  │
+        │ + endVoting(): void                       │
+        │ + isVotingActive(): boolean               │
+        │ - findCandidateById(String): Candidate    │
+        └───────────────────────────────────────────┘
+
+
+        ┌───────────────────────────────────────────┐
+        │         ADMIN CLASS                       │
+        │          Admin.java                       │
+        ├───────────────────────────────────────────┤
+        │ - username: String                        │
+        │ - password: String                        │
+        ├───────────────────────────────────────────┤
+        │ + Admin(username, password)               │
+        │ + authenticate(String, String): boolean   │
+        │ + getUsername(): String                   │
+        └───────────────────────────────────────────┘
+```
+
+---
+
+## Inheritance Hierarchy
+
+```
+                    Person (Abstract)
+                         │
+        ┌────────────────┴────────────────┐
+        │                                 │
+    Candidate                          Voter
+    (Concrete)                      (Concrete)
+```
+
+---
+
+## Package Structure
+
+```
+com.voting
+    │
+    ├── Main.java
+    │
+    ├── model/
+    │   ├── Person.java (Abstract)
+    │   ├── Admin.java
+    │   ├── Candidate.java
+    │   └── Voter.java
+    │
+    └── service/
+        └── VotingService.java
+```
+
+---
+
+## Relationships
+
+### 1. Inheritance (IS-A Relationship)
+- Candidate **IS-A** Person
+- Voter **IS-A** Person
+
+### 2. Composition (HAS-A Relationship)
+- VotingService **HAS-A** ArrayList of Candidates
+- VotingService **HAS-A** HashMap of Voters
+- Main **HAS-A** VotingService
+- Main **HAS-A** Admin
+
+### 3. Association
+- Main **uses** VotingService
+- Main **uses** Admin
+- VotingService **manages** Candidates
+- VotingService **manages** Voters
+
+---
+
+## Data Flow Diagram
+
+```
+┌─────────┐
+│  Admin  │
+└────┬────┘
+     │
+     │ 1. Login
+     ▼
+┌─────────────────┐
+│   Main Class    │
+│  (Controller)   │
+└────┬────────────┘
+     │
+     │ 2. Register Candidate
+     ▼
+┌─────────────────┐         ┌──────────────────┐
+│ VotingService   │────────▶│ ArrayList        │
+│  (Business      │         │ <Candidate>      │
+│   Logic)        │         └──────────────────┘
+└────┬────────────┘
+     │
+     │ 3. Register Voter
+     ▼
+┌──────────────────┐
+│ HashMap          │
+│ <String, Voter>  │
+└──────────────────┘
+
+┌─────────┐
+│  Voter  │
+└────┬────┘
+     │
+     │ 4. Cast Vote
+     ▼
+┌─────────────────┐
+│   Main Class    │
+└────┬────────────┘
+     │
+     │ 5. Validate & Record
+     ▼
+┌─────────────────┐
+│ VotingService   │
+│  - Check voter  │
+│  - Check voted  │
+│  - Increment    │
+│  - Mark voted   │
+└─────────────────┘
+```
+
+---
+
+## Sequence Diagram: Vote Casting
+
+```
+Voter          Main          VotingService       HashMap       Candidate
+  │              │                  │               │              │
+  │─────────────▶│                  │               │              │
+  │  Enter ID    │                  │               │              │
+  │              │──────────────────▶│               │              │
+  │              │  castVote()      │               │              │
+  │              │                  │───────────────▶│              │
+  │              │                  │  get(voterId) │              │
+  │              │                  │◀───────────────│              │
+  │              │                  │  Voter object │              │
+  │              │                  │               │              │
+  │              │                  │─ hasVoted()?  │              │
+  │              │                  │               │              │
+  │              │                  │─ findCandidate()             │
+  │              │                  │──────────────────────────────▶│
+  │              │                  │                              │
+  │              │                  │◀──────────────────────────────│
+  │              │                  │         Candidate            │
+  │              │                  │                              │
+  │              │                  │──────────────────────────────▶│
+  │              │                  │      incrementVote()         │
+  │              │                  │                              │
+  │              │                  │─ markAsVoted()               │
+  │              │                  │                              │
+  │              │◀──────────────────│                              │
+  │◀──────────────│  Success msg    │                              │
+  │              │                  │                              │
+```
+
+---
+
+## State Diagram: Voter States
+
+```
+┌─────────────┐
+│ Unregistered│
+└──────┬──────┘
+       │
+       │ register()
+       ▼
+┌─────────────┐
+│ Registered  │
+│ hasVoted=   │
+│   false     │
+└──────┬──────┘
+       │
+       │ castVote()
+       ▼
+┌─────────────┐
+│   Voted     │
+│ hasVoted=   │
+│   true      │
+└─────────────┘
+```
+
+---
+
+## Activity Diagram: Admin Workflow
+
+```
+        START
+          │
+          ▼
+    ┌──────────┐
+    │  Login   │
+    └────┬─────┘
+         │
+         ▼
+    ┌──────────────┐
+    │ Authenticated?│
+    └────┬─────┬───┘
+         │     │
+      Yes│     │No
+         │     └──────▶ [Error: Invalid credentials]
+         ▼
+    ┌──────────────┐
+    │ Admin Panel  │
+    └────┬─────────┘
+         │
+         ├──────────────┐
+         │              │
+         ▼              ▼
+┌─────────────┐  ┌─────────────┐
+│  Register   │  │    View     │
+│  Candidate  │  │   Voters    │
+└─────────────┘  └─────────────┘
+         │              │
+         ▼              ▼
+┌─────────────┐  ┌─────────────┐
+│    View     │  │     End     │
+│ Candidates  │  │   Voting    │
+└─────────────┘  └─────────────┘
+         │
+         ▼
+        END
+```
+
+---
+
+## OOP Concepts Mapping
+
+### Encapsulation
+```
+Person class:
+├── private String id       ← Hidden
+├── private String name     ← Hidden
+├── private int age         ← Hidden
+└── public getters          ← Controlled access
+```
+
+### Inheritance
+```
+Person (Parent)
+├── Candidate (Child)
+└── Voter (Child)
+```
+
+### Abstraction
+```
+abstract class Person {
+    abstract void displayInfo();  ← No implementation
+}
+
+class Candidate extends Person {
+    void displayInfo() { ... }    ← Must implement
+}
+```
+
+### Polymorphism
+```
+Person p1 = new Candidate(...);
+Person p2 = new Voter(...);
+
+p1.displayInfo();  ← Calls Candidate's version
+p2.displayInfo();  ← Calls Voter's version
+```
+
+---
+
+## Collections Framework Usage
+
+```
+VotingService
+├── ArrayList<Candidate>
+│   ├── Dynamic size
+│   ├── Ordered collection
+│   ├── Index-based access
+│   └── O(n) search
+│
+└── HashMap<String, Voter>
+    ├── Key-value pairs
+    ├── Unique keys (voter IDs)
+    ├── O(1) lookup
+    └── Fast search
+```
+
+---
+
+**This diagram provides a complete visual understanding of the project architecture!**
